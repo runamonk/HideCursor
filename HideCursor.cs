@@ -16,6 +16,7 @@ namespace HideCursor
         private int savedCursorY = 0;
         private int savedCursorX = 0;
         private bool cursorIsHidden = false;
+        private DateTime lastKeyEventTime;
         private string[] cursors = { "32512", "32513", "32514", "32515", "32516", "32642", "32643", "32644", "32645", "32646", "32648", "32649", "32650" };
         private const string activeChars = "abcdefghijklmnopqrstuvwxyz0123456789!£$~¬`{}[],.<>/?_+-=";
         private System.Windows.Forms.Timer MouseTimer;
@@ -42,7 +43,7 @@ namespace HideCursor
         {
             if (cursorIsHidden || (activeChars.IndexOf(key.ToString().ToLower()) == -1))
                 return;
-           
+            lastKeyEventTime = DateTime.Now;
             cursorIsHidden = true;
             savedCursorX = Cursor.Position.X;
             savedCursorY = Cursor.Position.Y;
@@ -69,10 +70,11 @@ namespace HideCursor
             contextMenu.MenuItems.Add(menuExit);
 
             MouseTimer = new System.Windows.Forms.Timer();
-            MouseTimer.Interval = 250;
+            MouseTimer.Interval = 500;
             MouseTimer.Tick += (sender, args) =>
             {
-                if (Cursor.Position.X != savedCursorX || Cursor.Position.Y != savedCursorY)
+                TimeSpan ts = DateTime.Now - lastKeyEventTime;
+                if (Cursor.Position.X != savedCursorX || Cursor.Position.Y != savedCursorY || Math.Round(ts.TotalSeconds) > 10)
                     ResetCursor();            
             };
 
